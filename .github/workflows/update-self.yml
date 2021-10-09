@@ -3,6 +3,8 @@ on:
   push: 
     branches:
       - master
+  schedule:
+    - cron:  '0 */24 * * *'
 jobs:
   Update:
     runs-on: ubuntu-18.04
@@ -16,8 +18,4 @@ jobs:
         run: |
           git config --global user.name 'Arthur Dzieniszewski'
           git config --global user.email 'arthurdzieniszewski@gmail.com'
-          git add index.html
-          git commit -m "Automated update"
-          git push --force
-
-
+          git diff index.html | xargs -0 echo | wc -w || (git add index.html && git commit -m "Automated update" && git push --force)
