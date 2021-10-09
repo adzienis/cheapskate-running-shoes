@@ -84,16 +84,14 @@ class HTMLFormatter
   def format(shoes)
     <<-HTML
       <html>
-      
-      <body style='display: flex; flex-direction: column; align-items: center'>
-        <div>
-          #{shoes.map do |shoe|
-            "<div>#{shoe.name}: <b>#{shoe.price}</b> </div>"
-          end.join("\n")
-           }
-        </div>
-      </body>
-
+        <body style='display: flex; flex-direction: column; align-items: center'>
+          <div>
+            #{shoes.map do |shoe|
+              "<div>#{shoe.name}: <b>#{shoe.price}</b> </div>"
+            end.join("\n")
+             }
+          </div>
+        </body>
       </html>
     HTML
   end
@@ -130,22 +128,4 @@ def main
   report_generator.build_report(HTMLFormatter.new)
 
 end and main
-
-
-require 'rack/cache'
-require 'rack/handler/puma'
-
-app = Rack::Builder.app do
-  root = File.expand_path(File.dirname(__FILE__))
-
-  use Rack::CommonLogger
-  use Rack::ContentLength
-  use Rack::ContentType
-  use Rack::Lint
-  use Rack::Static, :urls => [""], :root => @root, :index => "index.html"
-  run lambda {|env| [ 200, {'Content-Type' => 'text/plain'}, File.open('index.html', File::RDONLY) ]}
-end
-
-# Rack::Handler::Puma.run app
-
 
