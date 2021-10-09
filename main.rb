@@ -79,17 +79,46 @@ class ShoeStats
   end
 end
 
+class HTMLFormatter
+
+  def format(shoes)
+    <<-HTML
+      <html>
+      
+      <body style='display: flex; flex-direction: column; align-items: center'>
+        <div>
+          #{shoes.map do |shoe|
+            "<div>#{shoe.name}: <b>#{shoe.price}</b> </div>"
+          end.join("\n")
+           }
+        </div>
+      </body>
+      </html>
+    HTML
+  end
+
+end
+
+
 class ReportGenerator
 
-  def build_report
+  def build_report(formatter)
     parser = Parser.new
     shoe_stats = ShoeStats.new
 
     parser.fetch_and_parse
     
-    shoe_stats.top_shoes.take(10).each do |shoe|
-      p "#{shoe.name.to_s.ljust(55)} | #{shoe.link.to_s.ljust(90)} | #{shoe.price}"
+    top_shoes = shoe_stats.top_shoes.take(10)
+
+    formatted = formatter.format(top_shoes)
+
+    File.open('index.html', 'w') do |f|
+      f.write formatted
     end
+
+      #.each do |shoe|
+      #p "#{shoe.name.to_s.ljust(55)} | #{shoe.link.to_s.ljust(90)} | #{shoe.price}"
+      #end
   end
 
 end
@@ -97,8 +126,25 @@ end
 def main
   report_generator = ReportGenerator.new
 
-  report_generator.build_report
+  report_generator.build_report(HTMLFormatter.new)
 
 end and main
+
+
+require 'rack/cache'
+require 'rack/handler/puma'
+
+app = Rack::Builder.app do
+  root = File.expand_path(File.dirname(__FILE__))
+
+  use Rack::CommonLogger
+  use Rack::ContentLength
+  use Rack::ContentType
+  use Rack::Lint
+  use Rack::Static, :urls => [""], :root => @root, :index => "index.html"
+  run lambda {|env| [ 200, {'Content-Type' => 'text/plain'}, File.open('index.html', File::RDONLY) ]}
+end
+
+# Rack::Handler::Puma.run app
 
 

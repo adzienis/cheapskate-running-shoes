@@ -11,3 +11,7 @@ gem "nokogiri", "~> 1.12"
 gem "sqlite3", "~> 1.4"
 
 gem "activerecord", "~> 6.1"
+
+gem "rack", "~> 2.2"
+gem "rack-cache", "~> 1.13"
+gem "puma", "~> 5.5"
