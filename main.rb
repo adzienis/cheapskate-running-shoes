@@ -93,6 +93,7 @@ class HTMLFormatter
            }
         </div>
       </body>
+
       </html>
     HTML
   end

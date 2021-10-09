@@ -15,6 +15,6 @@ jobs:
           git config --global user.email 'arthurdzieniszewski@gmail.com'
           git add index.html
           git commit -m "Automated updated"
-          git push
+          git push --force
 
 
