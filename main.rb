@@ -84,10 +84,10 @@ class HTMLFormatter
   def format(shoes)
     <<-HTML
       <html>
-        <body style='display: flex; flex-direction: column; align-items: center'>
-          <div>
+        <body style='display: flex; justify-content: center'>
+          <div style='display: flex; flex-direction: column; align-items: center'>
             #{shoes.map do |shoe|
-              "<div>#{shoe.name}: <b>#{shoe.price}</b> </div>"
+              "<a href='#{shoe.link}'>#{shoe.name}: <b>#{shoe.price}</b> </a>"
             end.join("\n")
              }
           </div>
