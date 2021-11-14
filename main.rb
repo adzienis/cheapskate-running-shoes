@@ -28,7 +28,7 @@ class ApplicationRecord < ActiveRecord::Base
 end
 
 class Shoe < ApplicationRecord
-  scope :with_size, ->(size:, width: 'D') { from('shoes, json_each(shoes.sizes)').where("json_each.value IS '#{size} #{width}'") }
+  scope :with_sizes, ->(sizes:) { from('shoes, json_each(shoes.sizes)').where("json_each.value IN (#{sizes.map{|size| "'#{size[:length]} #{size[:width]}'"}.join(",")})") }
   scope :all_sizes, -> { where('json_array_length(shoes.sizes) = 0') }
 end
 
@@ -70,7 +70,7 @@ end
 
 class ShoeStats
   def top_shoes
-    sized_shoes = Shoe.with_size(size: '10.0')
+    sized_shoes = Shoe.with_sizes(sizes: [{ length: '10.0', width: 'D'}, { length: '10.5', width: 'D' }])
     all_sized_shoes = Shoe.all_sizes
 
     shoes = sized_shoes + all_sized_shoes
@@ -81,21 +81,40 @@ end
 
 class HTMLFormatter
 
+  def row_format(shoe)
+    cols_arr = [ "<a href='#{shoe.link}'>#{shoe.name} </a>",
+            "<b>#{shoe.price}</b>",
+            "<b>#{JSON.parse(shoe.sizes).join(", ")}</b>" ]
+    
+    cols = cols_arr.map{|c| "<td>#{c}</td>"}
+    
+    "<tr>#{cols.join("\n")}</tr>"
+  end
+
+  def table_entries(shoes)
+    shoes.map{ |shoe| row_format(shoe) }.join("")
+  end
+
   def format(shoes)
-    <<-HTML
+    <<~HTML
       <html>
-        <body style='display: flex; justify-content: center'>
-          <div style='display: flex; flex-direction: column; align-items: center'>
-            #{shoes.map do |shoe|
-              "<a href='#{shoe.link}'>#{shoe.name}: <b>#{shoe.price}</b> </a>"
-            end.join("\n")
-             }
-          </div>
+        <head>
+          <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+        </head>
+        <body>
+        <h3> Cheapest Shoes </h3>
+        <table>
+        <tr>
+        <th> Shoe </th>
+        <th> Price </th>
+        <th> Sizes (includes 10.0, 10.5) </th>
+        </tr>
+        #{table_entries(shoes)}
+        </table>
         </body>
       </html>
     HTML
   end
-
 end
 
 
@@ -114,10 +133,6 @@ class ReportGenerator
     File.open('index.html', 'w') do |f|
       f.write formatted
     end
-
-      #.each do |shoe|
-      #p "#{shoe.name.to_s.ljust(55)} | #{shoe.link.to_s.ljust(90)} | #{shoe.price}"
-      #end
   end
 
 end
